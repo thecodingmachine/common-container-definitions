@@ -144,25 +144,16 @@ class InstanceDefinition implements DefinitionInterface, ReferenceInterface
     /**
      * Generates PHP code for inline declaration of this instance.
      * @param $variableName
+     * @return string
      */
     public function toInlinePhpCode($variableName) {
-        $arguments = [];
-        $prependedCode = [];
-        foreach ($this->constructorArguments as $argument) {
-            $dumpedValue = ValueUtils::dumpValue($argument);
-            $arguments[] = $dumpedValue->getCode();
-            if (!empty($dumpedValue->getPrependCode())) {
-                $prependedCode[] = $dumpedValue->getPrependCode();
-            }
-        }
-        $argumentsCode = implode(', ', $arguments);
-        $prependedCodeString = implode("\n", $prependedCode);
-        $newStatement = sprintf("new %s(%s)", $this->className, $argumentsCode);
+        $dumpedArguments = ValueUtils::dumpArguments($this->constructorArguments);
+        $newStatement = sprintf("new %s(%s)", $this->className, $dumpedArguments->getCode());
         $code = sprintf("\$%s = %s;\n", $variableName, $newStatement);
         foreach ($this->actions as $action) {
             $code .= $action->toPhpCode($variableName)."\n";
         }
-        return $prependedCodeString.$code;
+        return $dumpedArguments->getPrependCode().$code;
     }
 
     private static function wrapInFunction($str) {

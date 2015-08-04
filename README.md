@@ -128,3 +128,29 @@ function(ContainerInterface $container) {
     return $instance;
 }
 ```
+
+### Inlining dependencies
+
+If you perfectly know that a dependency will be used only by a given entry, you can **inline** the code of the
+dependency into the code generating the main entry. To do this, you just need to put **null** as the identifier
+for your instance.
+
+```php
+use Mouf\Container\Definition;
+
+// null is passed as the identifier
+$dependencyDefinition = new InstanceDefinition(null, "My\\Dependency");
+
+$instanceDefinition = new InstanceDefinition("instanceName", "My\\Class");
+$instanceDefinition->addConstructorArgument($dependencyDefinition);
+```
+
+This code will generate an instance using this PHP code:
+
+```php
+function(ContainerInterface $container) {
+    $a = new My\Dependency();
+    $instance = new My\Class($a);
+    return $instance;
+}
+```

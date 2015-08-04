@@ -34,7 +34,6 @@ class ValueUtils
 
             return new DumpedValue(sprintf('array(%s)', implode(', ', $code)), implode("\n", $prependCode));
         } elseif ($value instanceof InstanceDefinition) {
-            // TODO: this can also be a "Variable" if we inline definitions!
             return self::dumpInstanceDefinition($value);
         } elseif ($value instanceof DumpableValueInterface) {
             return new DumpedValue($value->dumpCode());
@@ -43,6 +42,21 @@ class ValueUtils
         } else {
             return new DumpedValue(var_export($value, true));
         }
+    }
+
+    public static function dumpArguments($argumentsValues) {
+        $arguments = [];
+        $prependedCode = [];
+        foreach ($argumentsValues as $argument) {
+            $dumpedValue = ValueUtils::dumpValue($argument);
+            $arguments[] = $dumpedValue->getCode();
+            if (!empty($dumpedValue->getPrependCode())) {
+                $prependedCode[] = $dumpedValue->getPrependCode();
+            }
+        }
+        $argumentsCode = implode(', ', $arguments);
+        $prependedCodeString = implode("\n", $prependedCode);
+        return new DumpedValue($argumentsCode, $prependedCodeString);
     }
 
     private static function dumpInstanceDefinition(InstanceDefinition $definition) {

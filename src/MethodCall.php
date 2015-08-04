@@ -51,18 +51,7 @@ class MethodCall implements ActionInterface
      */
     public function toPhpCode($variableName)
     {
-        $arguments = [];
-        $prependedCode = [];
-        foreach ($this->arguments as $argument) {
-            $dumpedValue = ValueUtils::dumpValue($argument);
-            $arguments[] = $dumpedValue->getCode();
-            if (empty($dumpedValue->getPrependCode())) {
-                $prependedCode[] = $dumpedValue->getPrependCode();
-            }
-        }
-        $argumentsCode = implode(', ', $arguments);
-        $prependedCodeString = implode("\n", $prependedCode);
-
-        return $prependedCodeString.sprintf("$%s->%s(%s);", $variableName, $this->methodName, $argumentsCode);
+        $dumpedArguments = ValueUtils::dumpArguments($this->arguments);
+        return $dumpedArguments->getPrependCode().sprintf("$%s->%s(%s);", $variableName, $this->methodName, $dumpedArguments->getCode());
     }
 }
