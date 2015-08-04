@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: david
- * Date: 03/08/15
- * Time: 19:08
- */
-
 namespace Mouf\Container\Definition;
 
 /**

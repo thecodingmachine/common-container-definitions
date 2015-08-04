@@ -1,6 +1,7 @@
 <?php
 namespace Mouf\Container\Definition;
 
+use Mouf\Container\Definition\Fixtures\Test;
 use Mouf\Picotainer\Picotainer;
 
 class InstanceDefinitionTest extends \PHPUnit_Framework_TestCase
@@ -58,6 +59,16 @@ class InstanceDefinitionTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf("Mouf\\Container\\Definition\\Fixtures\\Test", $result);
         $this->assertInstanceOf("Mouf\\Container\\Definition\\Fixtures\\Test", $result->cArg1);
         $this->assertEquals("hello", $result->cArg1->cArg1);
+    }
+
+    /**
+     * @expectedException \RuntimeException
+     */
+    public function testSimpleConstructorWithException() {
+        $instanceDefinition = new InstanceDefinition("test", "Mouf\\Container\\Definition\\Fixtures\\Test");
+        $instanceDefinition->addConstructorArgument(new Test());
+
+        $instanceDefinition->toPhpCode();
     }
 
     private function getContainer(array $definitions) {
