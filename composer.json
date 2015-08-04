@@ -1,0 +1,30 @@
+{
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "git@github.com:container-interop/compiler-interop.git"
+        }
+    ],
+    "name": "mouf/common-container-definitions",
+    "type": "library",
+    "description": "This package contains common classes that implement the interfaces defined in container-interop/compiler-interop",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Mouf\\Container\\Definition\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Mouf\\Container\\Definition\\": "src/"
+        }
+    },
+    "require": {
+        "container-interop/compiler-interop": "dev-master",
+        "container-interop/container-interop": "~1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~4.0",
+        "mouf/picotainer": "~1.0"
+    }
+}
