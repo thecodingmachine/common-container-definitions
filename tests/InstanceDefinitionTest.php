@@ -71,6 +71,56 @@ class InstanceDefinitionTest extends \PHPUnit_Framework_TestCase
         $instanceDefinition->toPhpCode();
     }
 
+    public function testMethodCall() {
+        $instanceDefinition = new InstanceDefinition("test", "Mouf\\Container\\Definition\\Fixtures\\Test");
+        $instanceDefinition->addMethodCall("setArg1")->addArgument(42);
+
+        $container = $this->getContainer([
+            "test" => $instanceDefinition
+        ]);
+        $result = $container->get("test");
+
+        $this->assertInstanceOf("Mouf\\Container\\Definition\\Fixtures\\Test", $result);
+        $this->assertEquals("42", $result->cArg1);
+    }
+
+    public function testPropertyAssignment() {
+        $instanceDefinition = new InstanceDefinition("test", "Mouf\\Container\\Definition\\Fixtures\\Test");
+        $instanceDefinition->setProperty("cArg1", 42);
+
+        $container = $this->getContainer([
+            "test" => $instanceDefinition
+        ]);
+        $result = $container->get("test");
+
+        $this->assertInstanceOf("Mouf\\Container\\Definition\\Fixtures\\Test", $result);
+        $this->assertEquals("42", $result->cArg1);
+    }
+
+    public function testInlineDeclaration() {
+        // null passed as first parameter. This will generate an inline declaration.
+        $dependencyDefinition = new InstanceDefinition(null, "Mouf\\Container\\Definition\\Fixtures\\Test");
+        $dependencyDefinition->addConstructorArgument("hello");
+
+        $dependencyDefinition2 = new InstanceDefinition(null, "Mouf\\Container\\Definition\\Fixtures\\Test");
+        $dependencyDefinition2->addConstructorArgument("hello2");
+
+
+        $instanceDefinition = new InstanceDefinition("test", "Mouf\\Container\\Definition\\Fixtures\\Test");
+        $instanceDefinition->addConstructorArgument($dependencyDefinition);
+        $instanceDefinition->addConstructorArgument([$dependencyDefinition2]);
+
+        $container = $this->getContainer([
+            "test" => $instanceDefinition
+        ]);
+        $result = $container->get("test");
+
+        $this->assertInstanceOf("Mouf\\Container\\Definition\\Fixtures\\Test", $result);
+        $this->assertInstanceOf("Mouf\\Container\\Definition\\Fixtures\\Test", $result->cArg1);
+        $this->assertEquals("hello", $result->cArg1->cArg1);
+        $this->assertEquals("hello2", $result->cArg2[0]->cArg1);
+    }
+
     private function getContainer(array $definitions) {
         $closures = [];
         foreach ($definitions as $key => $definition) {

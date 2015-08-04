@@ -29,7 +29,7 @@ Those definitions needs to be passed to a **compiler** that will generate a **co
 All the definitions in this package are implementing the `Interop\Container\Compiler\DefinitionInterface`.
 This means they can be fed to any compiler compatible with [*compiler-interop*](https://github.com/container-interop/compiler-interop/).
 
-### Creating a classical container entry
+### Creating a typical container entry
 
 The typical container entry is an instance of a class that is passed some constructor arguments, with a few
 method calls (typically setters).
@@ -64,5 +64,67 @@ will generate an instance using this PHP code:
 ```php
 function(ContainerInterface $container) {
     return new My\Class($container->get("dependency"));
+}
+```
+
+You can also pass instance definitions in the arguments:
+ 
+```php
+use Mouf\Container\Definition;
+
+$dependencyDefinition = new InstanceDefinition("dependency", "My\\Dependency");
+
+$instanceDefinition = new InstanceDefinition("instanceName", "My\\Class");
+$instanceDefinition->addConstructorArgument($dependencyDefinition);
+```
+
+will generate an instance using this PHP code:
+
+```php
+function(ContainerInterface $container) {
+    return new My\Class($container->get("dependency"));
+}
+```
+
+### Method calls
+
+You can add method calls on your entry using the "addMethodCall" method:
+
+```php
+use Mouf\Container\Definition;
+
+$instanceDefinition = new InstanceDefinition("instanceName", "My\\Class");
+$methodCall = $instanceDefinition->addMethodCall("setFoo");
+$methodCall->addArgument(42);
+```
+
+This code will generate an instance using this PHP code:
+
+```php
+function(ContainerInterface $container) {
+    $instance = new My\Class();
+    $instance->setFoo(42);
+    return $instance;
+}
+```
+
+### Setting public properties
+
+You can add method calls on your entry using the "setProperty" method:
+
+```php
+use Mouf\Container\Definition;
+
+$instanceDefinition = new InstanceDefinition("instanceName", "My\\Class");
+$methodCall = $instanceDefinition->setProperty("foo", 42);
+```
+
+This code will generate an instance using this PHP code:
+
+```php
+function(ContainerInterface $container) {
+    $instance = new My\Class();
+    $instance->foo = 42;
+    return $instance;
 }
 ```

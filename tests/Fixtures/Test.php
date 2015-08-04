@@ -12,4 +12,8 @@ class Test
         $this->cArg1 = $cArg1;
         $this->cArg2 = $cArg2;
     }
+
+    public function setArg1($arg1) {
+        $this->cArg1 = $arg1;
+    }
 }

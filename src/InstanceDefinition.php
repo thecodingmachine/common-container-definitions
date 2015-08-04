@@ -10,6 +10,7 @@ use Interop\Container\Compiler\DefinitionInterface;
  */
 class InstanceDefinition implements DefinitionInterface, ReferenceInterface
 {
+
     /**
      * The identifier of the instance in the container.
      *
@@ -43,7 +44,7 @@ class InstanceDefinition implements DefinitionInterface, ReferenceInterface
      *
      * @param string|null $identifier The identifier of the instance in the container. Can be null if the instance is anonymous (declared inline of other instances)
      * @param string $className The fully qualified class name of this instance.
-     * @param array $constructorArguments A list of constructor parameters.
+     * @param array $constructorArguments A list of constructor arguments.
      */
     public function __construct($identifier, $className, array $constructorArguments = array())
     {
@@ -77,8 +78,38 @@ class InstanceDefinition implements DefinitionInterface, ReferenceInterface
         return $this->constructorArguments;
     }
 
+    /**
+     * Adds an argument to the list of arguments to be passed to the constructor.
+     * @param mixed $argument
+     * @return self
+     */
     public function addConstructorArgument($argument) {
         $this->constructorArguments[] = $argument;
+        return $this;
+    }
+
+    /**
+     * Adds a method call.
+     *
+     * @param string $methodName
+     * @param array $arguments
+     * @return MethodCall
+     */
+    public function addMethodCall($methodName, array $arguments = array()) {
+        $this->actions[] = $methodCall = new MethodCall($methodName, $arguments);
+        return $methodCall;
+    }
+
+    /**
+     * Adds a method call.
+     *
+     * @param string $propertyName
+     * @param mixed $value
+     * @return self
+     */
+    public function setProperty($propertyName, $value) {
+        $this->actions[] = new PropertyAssignement($propertyName, $value);
+        return $this;
     }
 
     /**
@@ -99,42 +130,44 @@ class InstanceDefinition implements DefinitionInterface, ReferenceInterface
      */
     public function toPhpCode()
     {
-        $arguments = implode(', ', array_map([$this, "dumpValue"], $this->constructorArguments));
-        $newStatement = sprintf("new %s(%s)", $this->className, $arguments);
-        return sprintf('function(Interop\\Container\\ContainerInterface $container) {
-            return %s;
-        }', $newStatement);
-    }
+        try {
+            VariableUtils::enter();
+            $code = $this->toInlinePhpCode("instance");
 
-    /**
-     * Dumps values.
-     *
-     * @param mixed $value
-     *
-     * @return string
-     *
-     * @throws \RuntimeException
-     */
-    private function dumpValue($value)
-    {
-        if (is_array($value)) {
-            $code = array();
-            foreach ($value as $k => $v) {
-                $code[] = sprintf('%s => %s', $this->dumpValue($k), $this->dumpValue($v));
-            }
-
-            return sprintf('array(%s)', implode(', ', $code));
-        } elseif ($value instanceof InstanceDefinition) {
-            // TODO: this can also be a "Variable" if we inline definitions!
-            $reference = new Reference($value->getIdentifier());
-            return $this->dumpValue($reference);
-        } elseif ($value instanceof DumpableValueInterface) {
-            return $value->dumpCode();
-        } elseif (is_object($value) || is_resource($value)) {
-            throw new \RuntimeException('Unable to dump a container if a parameter is an object or a resource.');
-        } else {
-            return var_export($value, true);
+            $code .= "return \$instance;";
+            return self::wrapInFunction($code);
+        } finally {
+            VariableUtils::leave();
         }
     }
 
+    /**
+     * Generates PHP code for inline declaration of this instance.
+     * @param $variableName
+     */
+    public function toInlinePhpCode($variableName) {
+        $arguments = [];
+        $prependedCode = [];
+        foreach ($this->constructorArguments as $argument) {
+            $dumpedValue = ValueUtils::dumpValue($argument);
+            $arguments[] = $dumpedValue->getCode();
+            if (!empty($dumpedValue->getPrependCode())) {
+                $prependedCode[] = $dumpedValue->getPrependCode();
+            }
+        }
+        $argumentsCode = implode(', ', $arguments);
+        $prependedCodeString = implode("\n", $prependedCode);
+        $newStatement = sprintf("new %s(%s)", $this->className, $argumentsCode);
+        $code = sprintf("\$%s = %s;\n", $variableName, $newStatement);
+        foreach ($this->actions as $action) {
+            $code .= $action->toPhpCode($variableName)."\n";
+        }
+        return $prependedCodeString.$code;
+    }
+
+    private static function wrapInFunction($str) {
+        return sprintf('function(Interop\\Container\\ContainerInterface $container) {
+            %s
+        }', $str);
+    }
 }
