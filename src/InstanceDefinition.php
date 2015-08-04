@@ -110,11 +110,10 @@ class InstanceDefinition implements DefinitionInterface, ReferenceInterface
      * Dumps values.
      *
      * @param mixed $value
-     * @param bool  $interpolate
      *
      * @return string
      *
-     * @throws RuntimeException
+     * @throws \RuntimeException
      */
     private function dumpValue($value)
     {
@@ -127,7 +126,7 @@ class InstanceDefinition implements DefinitionInterface, ReferenceInterface
             return sprintf('array(%s)', implode(', ', $code));
         } elseif ($value instanceof InstanceDefinition) {
             // TODO: this can also be a "Variable" if we inline definitions!
-            $reference = new Reference($value);
+            $reference = new Reference($value->getIdentifier());
             return $this->dumpValue($reference);
         } elseif ($value instanceof DumpableValueInterface) {
             return $value->dumpCode();
