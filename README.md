@@ -20,3 +20,49 @@ You can install this package through Composer:
 
 The packages adheres to the [SemVer](http://semver.org/) specification, and there will be full backward compatibility
 between minor versions.
+
+## Usage
+
+Classes in this package represent **definitions** of entries that can be put in a container.
+Those definitions needs to be passed to a **compiler** that will generate a **container** PHP class.
+
+All the definitions in this package are implementing the `Interop\Container\Compiler\DefinitionInterface`.
+This means they can be fed to any compiler compatible with [*compiler-interop*](https://github.com/container-interop/compiler-interop/).
+
+### Creating a classical container entry
+
+The typical container entry is an instance of a class that is passed some constructor arguments, with a few
+method calls (typically setters).
+
+```php
+use Mouf\Container\Definition;
+
+$instanceDefinition = new InstanceDefinition("instanceName", "My\\Class");
+$instanceDefinition->addConstructorArgument("foo");
+$instanceDefinition->addConstructorArgument(["bar"]);
+```
+
+will generate an instance using this PHP code:
+
+```php
+function(ContainerInterface $container) {
+    return new My\Class("foo", ["bar"]);
+}
+```
+
+You can pass references to other entries in the container by using the `Reference` class:
+ 
+```php
+use Mouf\Container\Definition;
+
+$instanceDefinition = new InstanceDefinition("instanceName", "My\\Class");
+$instanceDefinition->addConstructorArgument(new Reference("dependency"));
+```
+
+will generate an instance using this PHP code:
+
+```php
+function(ContainerInterface $container) {
+    return new My\Class($container->get("dependency"));
+}
+```
