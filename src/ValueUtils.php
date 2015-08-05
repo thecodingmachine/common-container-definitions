@@ -47,17 +47,13 @@ class ValueUtils
         $code = array();
         $prependCode = array();
         foreach ($value as $k => $v) {
-            $key = self::dumpValue($k);
             $value = self::dumpValue($v);
 
-            if ($key->getPrependCode()) {
-                $prependCode[] = $key->getPrependCode();
-            }
             if ($value->getPrependCode()) {
                 $prependCode[] = $value->getPrependCode();
             }
 
-            $code[] = sprintf('%s => %s', $key->getCode(), $value->getCode());
+            $code[] = sprintf('%s => %s', var_export($k, true), $value->getCode());
         }
 
         return new DumpedValue(sprintf('array(%s)', implode(', ', $code)), implode("\n", $prependCode));

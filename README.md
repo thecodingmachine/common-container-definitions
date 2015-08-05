@@ -35,7 +35,7 @@ The typical container entry is an instance of a class that is passed some constr
 method calls (typically setters).
 
 ```php
-use Mouf\Container\Definition;
+use Mouf\Container\Definition\InstanceDefinition;
 
 $instanceDefinition = new InstanceDefinition("instanceName", "My\\Class");
 $instanceDefinition->addConstructorArgument("foo");
@@ -53,7 +53,7 @@ function(ContainerInterface $container) {
 You can pass references to other entries in the container by using the `Reference` class:
  
 ```php
-use Mouf\Container\Definition;
+use Mouf\Container\Definition\InstanceDefinition;
 
 $instanceDefinition = new InstanceDefinition("instanceName", "My\\Class");
 $instanceDefinition->addConstructorArgument(new Reference("dependency"));
@@ -70,7 +70,7 @@ function(ContainerInterface $container) {
 You can also pass instance definitions in the arguments:
  
 ```php
-use Mouf\Container\Definition;
+use Mouf\Container\Definition\InstanceDefinition;
 
 $dependencyDefinition = new InstanceDefinition("dependency", "My\\Dependency");
 
@@ -91,7 +91,7 @@ function(ContainerInterface $container) {
 You can add method calls on your entry using the "addMethodCall" method:
 
 ```php
-use Mouf\Container\Definition;
+use Mouf\Container\Definition\InstanceDefinition;
 
 $instanceDefinition = new InstanceDefinition("instanceName", "My\\Class");
 $methodCall = $instanceDefinition->addMethodCall("setFoo");
@@ -113,7 +113,7 @@ function(ContainerInterface $container) {
 You can add method calls on your entry using the "setProperty" method:
 
 ```php
-use Mouf\Container\Definition;
+use Mouf\Container\Definition\InstanceDefinition;
 
 $instanceDefinition = new InstanceDefinition("instanceName", "My\\Class");
 $methodCall = $instanceDefinition->setProperty("foo", 42);
@@ -136,7 +136,7 @@ dependency into the code generating the main entry. To do this, you just need to
 for your instance.
 
 ```php
-use Mouf\Container\Definition;
+use Mouf\Container\Definition\InstanceDefinition;
 
 // null is passed as the identifier
 $dependencyDefinition = new InstanceDefinition(null, "My\\Dependency");
@@ -154,3 +154,19 @@ function(ContainerInterface $container) {
     return $instance;
 }
 ```
+
+### Creating a parameter entry
+
+A container does not store only objects. It can also store raw values. These values typically do not need to be
+stored in callbacks as resolving the callback would be an unnecessary burden. If you want to store a raw value,
+you can use the `ParameterDefinition` and directly pass the value of the parameter to this class.
+
+```php
+use Mouf\Container\Definition\ParameterDefinition;
+
+$parameterDefinition = new ParameterDefinition("parameterName", "value");
+```
+
+This code will generate an entry "parameterName" in your container whose value is "value".
+You can pass any kind of scalar or array values to `ParameterDefinition`.
+

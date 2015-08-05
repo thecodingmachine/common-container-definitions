@@ -2,7 +2,7 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "git@github.com:container-interop/compiler-interop.git"
+            "url": "git@github.com:moufmouf/compiler-interop.git"
         }
     ],
     "name": "mouf/common-container-definitions",
