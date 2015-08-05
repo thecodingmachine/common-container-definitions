@@ -157,7 +157,7 @@ class InstanceDefinition implements DefinitionInterface, ReferenceInterface
     }
 
     private static function wrapInFunction($str) {
-        return sprintf('function(Interop\\Container\\ContainerInterface $container) {
+        return sprintf('function(\\Interop\\Container\\ContainerInterface $container) {
             %s
         }', $str);
     }
