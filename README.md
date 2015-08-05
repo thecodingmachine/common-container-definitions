@@ -170,6 +170,19 @@ $parameterDefinition = new ParameterDefinition("parameterName", "value");
 This code will generate an entry "parameterName" in your container whose value is "value".
 You can pass any kind of scalar or array values to `ParameterDefinition`.
 
+### Creating a parameter entry that references a constant
+
+If you want your parameter entry to actually point to a constant (declared with `define`) or a class constant
+(declared with `const`), you can use the `ConstParameterDefinition`.
+
+```php
+use Mouf\Container\Definition\ConstParameterDefinition;
+
+$parameterDefinition = new ConstParameterDefinition("parameterName", "My\\Class::CONSTANT");
+```
+
+This code will generate an entry "parameterName" in your container that directly points to `My\\Class::CONSTANT`.
+
 ### Creating an alias
 
 A container can store aliases to other container's entries. You can create an alias to another entry using the 

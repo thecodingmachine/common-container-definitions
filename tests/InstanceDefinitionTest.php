@@ -119,23 +119,5 @@ class InstanceDefinitionTest extends AbstractDefinitionTest
         $this->assertEquals("hello", $result->cArg1->cArg1);
         $this->assertEquals("hello2", $result->cArg2[0]->cArg1);
     }
-
-    public function testInlineParameterDeclaration() {
-        // null passed as first parameter. This will generate an inline declaration.
-        $dependencyDefinition = new ParameterDefinition(null, "hello");
-
-        $instanceDefinition = new InstanceDefinition("test", "Mouf\\Container\\Definition\\Fixtures\\Test");
-        $instanceDefinition->addConstructorArgument($dependencyDefinition);
-
-        $container = $this->getContainer([
-            "test" => $instanceDefinition
-        ]);
-        $result = $container->get("test");
-
-        $this->assertInstanceOf("Mouf\\Container\\Definition\\Fixtures\\Test", $result);
-        $this->assertEquals("hello", $result->cArg1);
-    }
-
-
 }
 

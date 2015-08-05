@@ -1,24 +1,20 @@
 <?php
 namespace Mouf\Container\Definition;
 
-class ParameterDefinitionTest extends AbstractDefinitionTest
+class ConstParameterDefinitionTest extends AbstractDefinitionTest
 {
+    const TEST_CONST = "const";
 
     public function testGetters() {
-        $parameterDefinition = new ParameterDefinition("test", "value");
+        $parameterDefinition = new ConstParameterDefinition("test", "value");
 
         $this->assertEquals("test", $parameterDefinition->getIdentifier());
-        $this->assertEquals("value", $parameterDefinition->getValue());
+        $this->assertEquals("value", $parameterDefinition->getConst());
     }
 
-    public function testSimpleEncode() {
-        $parameterDefinition = new ParameterDefinition("test", "value");
-        $this->assertEquals("'value'", $parameterDefinition->toPhpCode());
-    }
-
-    public function testInlineParameterDeclaration() {
+    public function testInlineConstDeclaration() {
         // null passed as first parameter. This will generate an inline declaration.
-        $dependencyDefinition = new ParameterDefinition(null, "hello");
+        $dependencyDefinition = new ConstParameterDefinition(null, "Mouf\\Container\\Definition\\ConstParameterDefinitionTest::TEST_CONST");
 
         $instanceDefinition = new InstanceDefinition("test", "Mouf\\Container\\Definition\\Fixtures\\Test");
         $instanceDefinition->addConstructorArgument($dependencyDefinition);
@@ -29,6 +25,6 @@ class ParameterDefinitionTest extends AbstractDefinitionTest
         $result = $container->get("test");
 
         $this->assertInstanceOf("Mouf\\Container\\Definition\\Fixtures\\Test", $result);
-        $this->assertEquals("hello", $result->cArg1);
+        $this->assertEquals("const", $result->cArg1);
     }
 }
