@@ -8,7 +8,7 @@ use Interop\Container\Compiler\DefinitionInterface;
  * This class represents an instance declared using the "new" keyword followed by an optional list of
  * method calls and properties assignations.
  */
-class InstanceDefinition implements DefinitionInterface, ReferenceInterface
+class InstanceDefinition extends AbstractDefinition implements DefinitionInterface, ReferenceInterface
 {
 
     /**
@@ -154,11 +154,5 @@ class InstanceDefinition implements DefinitionInterface, ReferenceInterface
             $code .= $action->toPhpCode($variableName)."\n";
         }
         return $dumpedArguments->getPrependCode().$code;
-    }
-
-    private static function wrapInFunction($str) {
-        return sprintf('function(\\Interop\\Container\\ContainerInterface $container) {
-            %s
-        }', $str);
     }
 }

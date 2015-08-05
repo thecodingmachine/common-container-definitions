@@ -170,3 +170,22 @@ $parameterDefinition = new ParameterDefinition("parameterName", "value");
 This code will generate an entry "parameterName" in your container whose value is "value".
 You can pass any kind of scalar or array values to `ParameterDefinition`.
 
+### Creating an alias
+
+A container can store aliases to other container's entries. You can create an alias to another entry using the 
+`AliasDefinition` class.
+
+```php
+use Mouf\Container\Definition\ParameterDefinition;
+
+$aliasDefinition = new AliasDefinition("alias", "aliased_entry");
+```
+
+When calling `$container->get('alias')`, you will be given the entry stored in `aliased_entry`.
+Generated code is:
+
+```php
+function(ContainerInterface $container) {
+    return $container->get('aliased_entry');
+}
+```

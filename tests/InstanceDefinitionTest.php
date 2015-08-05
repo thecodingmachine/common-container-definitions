@@ -2,9 +2,8 @@
 namespace Mouf\Container\Definition;
 
 use Mouf\Container\Definition\Fixtures\Test;
-use Mouf\Picotainer\Picotainer;
 
-class InstanceDefinitionTest extends \PHPUnit_Framework_TestCase
+class InstanceDefinitionTest extends AbstractDefinitionTest
 {
 
     public function testGetters() {
@@ -137,13 +136,6 @@ class InstanceDefinitionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("hello", $result->cArg1);
     }
 
-    private function getContainer(array $definitions) {
-        $closures = [];
-        foreach ($definitions as $key => $definition) {
-            $closures[$key] = eval("return ".$definition->toPhpCode().";");
-        }
-        $picotainer = new Picotainer($closures);
-        return $picotainer;
-    }
+
 }
 
