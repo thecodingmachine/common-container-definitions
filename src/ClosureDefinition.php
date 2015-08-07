@@ -3,7 +3,7 @@ namespace Mouf\Container\Definition;
 
 
 use Interop\Container\Compiler\DefinitionInterface;
-use SuperClosure\Analyzer\AstAnalyzer;
+use SuperClosure\Analyzer\TokenAnalyzer;
 
 /**
  * This class represents a closure.
@@ -30,9 +30,9 @@ class ClosureDefinition implements DefinitionInterface, ReferenceInterface, Dump
      * Constructs an instance definition.
      *
      * @param string|null $identifier The identifier of the entry in the container. Can be null if the entry is anonymous (declared inline in other instances)
-     * @param string $closure The closure. It should not contain context (i.e. no "use" keyword in the closure definition). It should accept one compulsory parameter: the container.
+     * @param \Closure $closure The closure. It should not contain context (i.e. no "use" keyword in the closure definition). It should accept one compulsory parameter: the container.
      */
-    public function __construct($identifier, $closure)
+    public function __construct($identifier, \Closure $closure)
     {
         $this->identifier = $identifier;
         $this->closure = $closure;
@@ -61,7 +61,7 @@ class ClosureDefinition implements DefinitionInterface, ReferenceInterface, Dump
      */
     public function toPhpCode()
     {
-        $analyzer = new AstAnalyzer();
+        $analyzer = new TokenAnalyzer();
         $analysis = $analyzer->analyze($this->closure);
 
         if ($analysis['hasThis']) {
