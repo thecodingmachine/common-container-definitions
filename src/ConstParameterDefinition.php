@@ -67,6 +67,6 @@ class ConstParameterDefinition implements DefinitionInterface, ReferenceInterfac
      */
     public function dumpCode()
     {
-        return $this->toPhpCode();
+        return new DumpedValue($this->toPhpCode());
     }
 }

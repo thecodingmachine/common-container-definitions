@@ -59,7 +59,7 @@ class AliasDefinition extends AbstractDefinition implements DefinitionInterface,
      */
     public function toPhpCode()
     {
-        return self::wrapInFunction("return ".$this->dumpCode().";");
+        return self::wrapInFunction("return ".$this->dumpCode()->getCode().";");
     }
 
     /**
@@ -67,6 +67,6 @@ class AliasDefinition extends AbstractDefinition implements DefinitionInterface,
      */
     public function dumpCode()
     {
-        return '$container->get('.var_export($this->alias, true).')';
+        return new DumpedValue('$container->get('.var_export($this->alias, true).')');
     }
 }

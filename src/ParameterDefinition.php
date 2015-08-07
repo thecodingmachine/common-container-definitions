@@ -68,6 +68,6 @@ class ParameterDefinition implements DefinitionInterface, ReferenceInterface, Du
      */
     public function dumpCode()
     {
-        return $this->toPhpCode();
+        return new DumpedValue($this->toPhpCode());
     }
 }

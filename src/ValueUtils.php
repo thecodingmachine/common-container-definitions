@@ -20,7 +20,7 @@ class ValueUtils
         } elseif ($value instanceof InstanceDefinition) {
             return self::dumpInstanceDefinition($value);
         } elseif ($value instanceof DumpableValueInterface) {
-            return new DumpedValue($value->dumpCode());
+            return $value->dumpCode();
         } elseif (is_object($value) || is_resource($value)) {
             throw new \RuntimeException('Unable to dump a container if a parameter is an object or a resource.');
         } else {

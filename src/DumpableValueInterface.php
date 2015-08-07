@@ -7,5 +7,8 @@ namespace Mouf\Container\Definition;
  */
 interface DumpableValueInterface
 {
+    /**
+     * @return DumpedValue
+     */
     public function dumpCode();
 }

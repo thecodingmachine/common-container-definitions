@@ -18,7 +18,7 @@ class Reference implements ReferenceInterface, DumpableValueInterface
     }
 
     public function dumpCode() {
-        return '$container->get('.var_export($this->reference, true).')';
+        return new DumpedValue('$container->get('.var_export($this->reference, true).')');
     }
 
     /**
