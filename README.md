@@ -202,3 +202,25 @@ function(ContainerInterface $container) {
     return $container->get('aliased_entry');
 }
 ```
+
+### Creating a definition from a closure
+
+You can define container entries using **closures**. When the entry is retrieved, the closure will be evaluated
+and the entry will be the return value of the closure.
+
+```php
+use Mouf\Container\Definition\ClosureDefinition;
+use Interop\Container\ContainerInterface;
+
+$closureDefinition = new ClosureDefinition("closureDef", function(ContainerInterface $container) {
+    return new My\Service();
+});
+```
+
+Please note:
+
+ - The closure should accept one parameter: the container on which dependencies will be fetched
+ - The closure cannot use the `$this` keyword
+ - The closure cannot use context (the `use` keyword in the closure declaration)
+ - The code of the closure will actually be **copied**, not referenced
+
