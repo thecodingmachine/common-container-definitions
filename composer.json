@@ -20,7 +20,7 @@
         }
     },
     "require": {
-        "container-interop/compiler-interop": "dev-master",
+        "container-interop/compiler-interop": "~0.1.0",
         "container-interop/container-interop": "~1.0",
         "jeremeamia/SuperClosure": "~2.0"
     },
