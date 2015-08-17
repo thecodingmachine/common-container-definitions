@@ -40,34 +40,17 @@ use Mouf\Container\Definition\InstanceDefinition;
 $instanceDefinition = new InstanceDefinition("instanceName", "My\\Class");
 $instanceDefinition->addConstructorArgument("foo");
 $instanceDefinition->addConstructorArgument(["bar"]);
+
+return $instanceDefinition->toPhpCode('$container', []);
 ```
 
-will generate an instance using this PHP code:
+will return an `InlineEntry` object containing:
 
-```php
-function(ContainerInterface $container) {
-    return new My\Class("foo", ["bar"]);
-}
-```
+- **expression**: `new My\Class("foo", ["bar"])`
+- **statements**: *empty*
+- **usedVariables**: *empty*
 
-You can pass references to other entries in the container by using the `Reference` class:
- 
-```php
-use Mouf\Container\Definition\InstanceDefinition;
-
-$instanceDefinition = new InstanceDefinition("instanceName", "My\\Class");
-$instanceDefinition->addConstructorArgument(new Reference("dependency"));
-```
-
-will generate an instance using this PHP code:
-
-```php
-function(ContainerInterface $container) {
-    return new My\Class($container->get("dependency"));
-}
-```
-
-You can also pass instance definitions in the arguments:
+You can pass references to other entries in the container by passing another object implementing the `DefinitionInterface`:
  
 ```php
 use Mouf\Container\Definition\InstanceDefinition;
@@ -76,15 +59,15 @@ $dependencyDefinition = new InstanceDefinition("dependency", "My\\Dependency");
 
 $instanceDefinition = new InstanceDefinition("instanceName", "My\\Class");
 $instanceDefinition->addConstructorArgument($dependencyDefinition);
+
+return $instanceDefinition->toPhpCode('$container', []);
 ```
 
-will generate an instance using this PHP code:
+will return an `InlineEntry` object containing:
 
-```php
-function(ContainerInterface $container) {
-    return new My\Class($container->get("dependency"));
-}
-```
+- **expression**: `new My\Class($container->get("dependency"))`
+- **statements**: *empty*
+- **usedVariables**: *empty*
 
 ### Method calls
 
@@ -96,17 +79,19 @@ use Mouf\Container\Definition\InstanceDefinition;
 $instanceDefinition = new InstanceDefinition("instanceName", "My\\Class");
 $methodCall = $instanceDefinition->addMethodCall("setFoo");
 $methodCall->addArgument(42);
+
+return $instanceDefinition->toPhpCode('$container', []);
 ```
 
-This code will generate an instance using this PHP code:
+will return an `InlineEntry` object containing:
 
-```php
-function(ContainerInterface $container) {
-    $instance = new My\Class();
-    $instance->setFoo(42);
-    return $instance;
-}
-```
+- **statements**: 
+  ```php
+  $instanceName = new My\Class();
+  $instanceName->setFoo(42);
+  ```
+- **expression**: `$instanceName`
+- **usedVariables**: `[ '$instanceName' ]`
 
 ### Setting public properties
 
@@ -116,18 +101,20 @@ You can add method calls on your entry using the "setProperty" method:
 use Mouf\Container\Definition\InstanceDefinition;
 
 $instanceDefinition = new InstanceDefinition("instanceName", "My\\Class");
-$methodCall = $instanceDefinition->setProperty("foo", 42);
+$instanceDefinition->setProperty("foo", 42);
+
+return $instanceDefinition->toPhpCode('$container', []);
 ```
 
-This code will generate an instance using this PHP code:
+will return an `InlineEntry` object containing:
 
-```php
-function(ContainerInterface $container) {
-    $instance = new My\Class();
-    $instance->foo = 42;
-    return $instance;
-}
-```
+- **statements**: 
+  ```php
+  $instanceName = new My\Class();
+  $instanceName->foo = 42;
+  ```
+- **expression**: `$instanceName`
+- **usedVariables**: `[ '$instanceName' ]`
 
 ### Inlining dependencies
 
@@ -143,17 +130,19 @@ $dependencyDefinition = new InstanceDefinition(null, "My\\Dependency");
 
 $instanceDefinition = new InstanceDefinition("instanceName", "My\\Class");
 $instanceDefinition->addConstructorArgument($dependencyDefinition);
+
+return $instanceDefinition->toPhpCode('$container', []);
 ```
 
-This code will generate an instance using this PHP code:
+will return an `InlineEntry` object containing:
 
-```php
-function(ContainerInterface $container) {
-    $a = new My\Dependency();
-    $instance = new My\Class($a);
-    return $instance;
-}
-```
+- **statements**: 
+  ```php
+  $myDependency = new My\Dependency();
+  $instanceName = new My\Class($myDependency);
+  ```
+- **expression**: `$instanceName`
+- **usedVariables**: `[ '$instanceName', '$myDependency' ]`
 
 ### Creating a parameter entry
 
@@ -165,7 +154,16 @@ you can use the `ParameterDefinition` and directly pass the value of the paramet
 use Mouf\Container\Definition\ParameterDefinition;
 
 $parameterDefinition = new ParameterDefinition("parameterName", "value");
+
+return $parameterDefinition->toPhpCode('$container', []);
 ```
+
+will return an `InlineEntry` object containing:
+
+- **statements**: *empty*
+- **expression**: `"value"`
+- **usedVariables**: *empty*
+- **lazilyEvaluated**: *false*
 
 This code will generate an entry "parameterName" in your container whose value is "value".
 You can pass any kind of scalar or array values to `ParameterDefinition`.
@@ -179,7 +177,15 @@ If you want your parameter entry to actually point to a constant (declared with 
 use Mouf\Container\Definition\ConstParameterDefinition;
 
 $parameterDefinition = new ConstParameterDefinition("parameterName", "My\\Class::CONSTANT");
+return $parameterDefinition->toPhpCode('$container', []);
 ```
+
+will return an `InlineEntry` object containing:
+
+- **statements**: *empty*
+- **expression**: `My\\Class::CONSTANT`
+- **usedVariables**: *empty*
+- **lazilyEvaluated**: *false*
 
 This code will generate an entry "parameterName" in your container that directly points to `My\\Class::CONSTANT`.
 
@@ -197,13 +203,13 @@ $aliasDefinition = new AliasDefinition("alias", "aliased_entry");
 When calling `$container->get('alias')`, you will be given the entry stored in `aliased_entry`.
 Generated code is:
 
-```php
-function(ContainerInterface $container) {
-    return $container->get('aliased_entry');
-}
-```
+- **expression**: `$container->get('aliased_entry')`
+- **statements**: *empty*
+- **usedVariables**: *empty*
 
 ### Creating a definition from a closure
+
+TODO: doc need update
 
 You can define container entries using **closures**. When the entry is retrieved, the closure will be evaluated
 and the entry will be the return value of the closure.
