@@ -3,12 +3,13 @@ namespace Mouf\Container\Definition;
 
 
 use Interop\Container\Compiler\DefinitionInterface;
+use Interop\Container\Compiler\InlineEntryInterface;
 
 /**
  * This class represents an instance declared using the "new" keyword followed by an optional list of
  * method calls and properties assignations.
  */
-class InstanceDefinition extends AbstractDefinition implements DefinitionInterface, ReferenceInterface
+class InstanceDefinition implements DefinitionInterface
 {
 
     /**
@@ -108,51 +109,36 @@ class InstanceDefinition extends AbstractDefinition implements DefinitionInterfa
      * @return self
      */
     public function setProperty($propertyName, $value) {
-        $this->actions[] = new PropertyAssignement($propertyName, $value);
+        $this->actions[] = new PropertyAssignment($propertyName, $value);
         return $this;
     }
 
     /**
-     * Returns a string of PHP code generating the container entry.
+     * Returns an InlineEntryInterface object representing the PHP code necessary to generate
+     * the container entry.
      *
-     * The PHP code MUST be a closure, and that closure MUST take one argument that is a
-     * Interop\Container\ContainerInterface object.
-     * The function MUST return the entry generated.
-     *
-     * For instance, this is a valid PHP string:
-     *
-     * function(Interop\Container\ContainerInterface $container) {
-     *     $service = new MyService($container->get('my_dependency'));
-     *     return $service;
-     * }
-     *
-     * @return string
+     * @param string $containerVariable The name of the variable that allows access to the container instance. For instance: "$container", or "$this->container"
+     * @param array $usedVariables An array of variables that are already used and that should not be used when generating this code.
+     * @return InlineEntryInterface
      */
-    public function toPhpCode()
+    public function toPhpCode($containerVariable, array $usedVariables = array())
     {
-        try {
-            VariableUtils::enter();
-            $code = $this->toInlinePhpCode("instance");
-
-            $code .= "return \$instance;";
-            return self::wrapInFunction($code);
-        } finally {
-            VariableUtils::leave();
+        if ($this->identifier !== null) {
+            $variableName = $this->getIdentifier();
+        } else {
+            $variableName = $this->className;
         }
-    }
+        $variableName = VariableUtils::getNextAvailableVariableName(lcfirst($variableName), $usedVariables);
 
-    /**
-     * Generates PHP code for inline declaration of this instance.
-     * @param $variableName
-     * @return string
-     */
-    public function toInlinePhpCode($variableName) {
-        $dumpedArguments = ValueUtils::dumpArguments($this->constructorArguments);
-        $newStatement = sprintf("new %s(%s)", $this->className, $dumpedArguments->getCode());
-        $code = sprintf("\$%s = %s;\n", $variableName, $newStatement);
+        $usedVariables[] = $variableName;
+        $dumpedArguments = ValueUtils::dumpArguments($this->constructorArguments, $containerVariable, $usedVariables);
+        $prependedCode = $dumpedArguments->getStatements();
+        $code = sprintf("%s = new %s(%s);\n", $variableName, $this->className, $dumpedArguments->getExpression());
         foreach ($this->actions as $action) {
-            $code .= $action->toPhpCode($variableName)."\n";
+            $inlineCode = $action->toPhpCode($variableName, $containerVariable, $usedVariables);
+            $code .= $inlineCode->getStatements()."\n";
+            $usedVariables = $inlineCode->getUsedVariables();
         }
-        return $dumpedArguments->getPrependCode().$code;
+        return new InlineEntry($variableName, $prependedCode.$code, $usedVariables);
     }
 }

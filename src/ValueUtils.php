@@ -2,72 +2,70 @@
 namespace Mouf\Container\Definition;
 
 
+use Interop\Container\Compiler\DefinitionInterface;
+
 class ValueUtils
 {
     /**
      * Dumps values.
      *
      * @param mixed $value
-     *
-     * @return DumpedValue
-     *
-     * @throws \RuntimeException
+     * @param string $containerVariable
+     * @param array $usedVariables
+     * @return InlineEntry
      */
-    public static function dumpValue($value)
+    public static function dumpValue($value, $containerVariable, array $usedVariables)
     {
         if (is_array($value)) {
-            return self::dumpArray($value);
-        } elseif ($value instanceof InstanceDefinition) {
-            return self::dumpInstanceDefinition($value);
-        } elseif ($value instanceof DumpableValueInterface) {
-            return $value->dumpCode();
+            return self::dumpArray($value, $containerVariable, $usedVariables);
+        } elseif ($value instanceof DefinitionInterface) {
+            return self::dumpDefinition($value, $containerVariable, $usedVariables);
         } elseif (is_object($value) || is_resource($value)) {
             throw new \RuntimeException('Unable to dump a container if a parameter is an object or a resource.');
         } else {
-            return new DumpedValue(var_export($value, true));
+            return new InlineEntry(var_export($value, true), null, $usedVariables);
         }
     }
 
-    public static function dumpArguments($argumentsValues) {
+    public static function dumpArguments($argumentsValues, $containerVariable, array $usedVariables) {
         $arguments = [];
         $prependedCode = [];
         foreach ($argumentsValues as $argument) {
-            $dumpedValue = ValueUtils::dumpValue($argument);
-            $arguments[] = $dumpedValue->getCode();
-            if (!empty($dumpedValue->getPrependCode())) {
-                $prependedCode[] = $dumpedValue->getPrependCode();
+            $inlineEntry = ValueUtils::dumpValue($argument, $containerVariable, $usedVariables);
+            $usedVariables = $inlineEntry->getUsedVariables();
+            $arguments[] = $inlineEntry->getExpression();
+            if (!empty($inlineEntry->getStatements())) {
+                $prependedCode[] = $inlineEntry->getStatements();
             }
         }
         $argumentsCode = implode(', ', $arguments);
         $prependedCodeString = implode("\n", $prependedCode);
-        return new DumpedValue($argumentsCode, $prependedCodeString);
+        return new InlineEntry($argumentsCode, $prependedCodeString, $usedVariables);
     }
 
-    private static function dumpArray(array $value) {
+    private static function dumpArray(array $value, $containerVariable, array $usedVariables) {
         $code = array();
         $prependCode = array();
         foreach ($value as $k => $v) {
-            $value = self::dumpValue($v);
+            $value = self::dumpValue($v, $containerVariable, $usedVariables);
 
-            if ($value->getPrependCode()) {
-                $prependCode[] = $value->getPrependCode();
+            if ($value->getStatements()) {
+                $prependCode[] = $value->getStatements();
             }
+            $usedVariables = $value->getUsedVariables();
 
-            $code[] = sprintf('%s => %s', var_export($k, true), $value->getCode());
+            $code[] = sprintf('%s => %s', var_export($k, true), $value->getExpression());
         }
 
-        return new DumpedValue(sprintf('array(%s)', implode(', ', $code)), implode("\n", $prependCode));
+        return new InlineEntry(sprintf('array(%s)', implode(', ', $code)), implode("\n", $prependCode), $usedVariables);
     }
 
-    private static function dumpInstanceDefinition(InstanceDefinition $definition) {
+    private static function dumpDefinition(DefinitionInterface $definition, $containerVariable, array $usedVariables) {
         // If the identifier is null, we must inline the definition.
         if ($definition->getIdentifier() === null) {
-            $variableName = VariableUtils::getNextVariableName();
-            $code = $definition->toInlinePhpCode($variableName);
-            return new DumpedValue("\$".$variableName, $code);
+            return $definition->toPhpCode($containerVariable, $usedVariables);
+        } else {
+            return new InlineEntry(sprintf("%s->get(%s)", $containerVariable, var_export($definition->getIdentifier(), true)), null, $usedVariables);
         }
-
-        $reference = new Reference($definition->getIdentifier());
-        return self::dumpValue($reference);
     }
 }

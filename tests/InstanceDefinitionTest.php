@@ -67,7 +67,7 @@ class InstanceDefinitionTest extends AbstractDefinitionTest
         $instanceDefinition = new InstanceDefinition("test", "Mouf\\Container\\Definition\\Fixtures\\Test");
         $instanceDefinition->addConstructorArgument(new Test());
 
-        $instanceDefinition->toPhpCode();
+        $instanceDefinition->toPhpCode('$container', []);
     }
 
     public function testMethodCall() {

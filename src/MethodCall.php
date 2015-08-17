@@ -2,6 +2,7 @@
 
 
 namespace Mouf\Container\Definition;
+use Interop\Container\Compiler\InlineEntryInterface;
 
 /**
  * Represents a call to a method.
@@ -46,12 +47,15 @@ class MethodCall implements ActionInterface
 
     /**
      * Generates PHP code for the line.
-     * @param string $variableName Variable name without the $
-     * @return mixed
+     * @param string $variableName
+     * @param string $containerVariable
+     * @param array $usedVariables
+     * @return InlineEntryInterface
      */
-    public function toPhpCode($variableName)
-    {
-        $dumpedArguments = ValueUtils::dumpArguments($this->arguments);
-        return $dumpedArguments->getPrependCode().sprintf("$%s->%s(%s);", $variableName, $this->methodName, $dumpedArguments->getCode());
+    public function toPhpCode($variableName, $containerVariable, array $usedVariables) {
+        $dumpedArguments = ValueUtils::dumpArguments($this->arguments, $containerVariable, $usedVariables);
+        $codeLine = sprintf("%s->%s(%s);", $variableName, $this->methodName, $dumpedArguments->getExpression());
+
+        return new InlineEntry("", $dumpedArguments->getStatements().$codeLine, $dumpedArguments->getUsedVariables());
     }
 }

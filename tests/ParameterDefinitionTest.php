@@ -13,7 +13,10 @@ class ParameterDefinitionTest extends AbstractDefinitionTest
 
     public function testSimpleEncode() {
         $parameterDefinition = new ParameterDefinition("test", "value");
-        $this->assertEquals("'value'", $parameterDefinition->toPhpCode());
+        $inlineEntry = $parameterDefinition->toPhpCode('$container', []);
+        $this->assertEquals("'value'", $inlineEntry->getExpression());
+        $this->assertEquals(false, $inlineEntry->isLazilyEvaluated());
+        $this->assertEquals(null, $inlineEntry->getStatements());
     }
 
     public function testInlineParameterDeclaration() {

@@ -3,11 +3,12 @@ namespace Mouf\Container\Definition;
 
 
 use Interop\Container\Compiler\DefinitionInterface;
+use Interop\Container\Compiler\InlineEntryInterface;
 
 /**
  * This class represents a constant parameter (a "define" or a const in a class).
  */
-class ConstParameterDefinition implements DefinitionInterface, ReferenceInterface, DumpableValueInterface
+class ConstParameterDefinition implements DefinitionInterface
 {
 
     /**
@@ -55,18 +56,15 @@ class ConstParameterDefinition implements DefinitionInterface, ReferenceInterfac
     }
 
     /**
-     * @return string
+     * Returns an InlineEntryInterface object representing the PHP code necessary to generate
+     * the container entry.
+     *
+     * @param string $containerVariable The name of the variable that allows access to the container instance. For instance: "$container", or "$this->container"
+     * @param array $usedVariables An array of variables that are already used and that should not be used when generating this code.
+     * @return InlineEntryInterface
      */
-    public function toPhpCode()
+    public function toPhpCode($containerVariable, array $usedVariables = array())
     {
-        return $this->const;
-    }
-
-    /**
-     * @return string
-     */
-    public function dumpCode()
-    {
-        return new DumpedValue($this->toPhpCode());
+        return new InlineEntry($this->const, null, $usedVariables, false);
     }
 }

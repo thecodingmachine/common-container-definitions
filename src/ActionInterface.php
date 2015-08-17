@@ -1,9 +1,10 @@
 <?php
 namespace Mouf\Container\Definition;
+use Interop\Container\Compiler\InlineEntryInterface;
 
 /**
  * Classes implementing ActionInterface represent a line of PHP code that is an action performed on an object.
- * This can be a method call or a public property assignement.
+ * This can be a method call or a public property assignment.
  */
 interface ActionInterface
 {
@@ -11,7 +12,9 @@ interface ActionInterface
     /**
      * Generates PHP code for the line.
      * @param string $variableName
-     * @return mixed
+     * @param string $containerVariable
+     * @param array $usedVariables
+     * @return InlineEntryInterface
      */
-    public function toPhpCode($variableName);
+    public function toPhpCode($variableName, $containerVariable, array $usedVariables);
 }
