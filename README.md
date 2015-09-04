@@ -209,8 +209,6 @@ Generated code is:
 
 ### Creating a definition from a closure
 
-TODO: doc need update
-
 You can define container entries using **closures**. When the entry is retrieved, the closure will be evaluated
 and the entry will be the return value of the closure.
 
@@ -229,4 +227,3 @@ Please note:
  - The closure cannot use the `$this` keyword
  - The closure cannot use context (the `use` keyword in the closure declaration)
  - The code of the closure will actually be **copied**, not referenced
-
